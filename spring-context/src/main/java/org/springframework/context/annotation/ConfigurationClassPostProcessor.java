@@ -68,8 +68,12 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-
 /**
+ * 此类是一个后置处理器类，主要功能是参与BeanFactory的构建，主要功能如下：
+ * 	1.解析加了@Configuration的配置类
+ * 	2.解析@ComponentScan扫描的包
+ * 	3.解析@ComponentScans扫描的包
+ * 	4.解析@Import注解
  * {@link BeanFactoryPostProcessor} used for bootstrapping processing of
  * {@link Configuration @Configuration} classes.
  *
@@ -279,11 +283,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+			//如果beanDefinition中的configurationClass不为空，那么意味着已经处理过
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
+			//判断当前类是否添加了@Configuration注解
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}

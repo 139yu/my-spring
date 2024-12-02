@@ -73,6 +73,7 @@ final class PostProcessorRegistrationDelegate {
 		// https://github.com/spring-projects/spring-framework/issues?q=PostProcessorRegistrationDelegate+is%3Aclosed+label%3A%22status%3A+declined%22
 
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
+		//存储已经执行过的BFPP，防止重复执行
 		Set<String> processedBeans = new HashSet<>();
 
 		if (beanFactory instanceof BeanDefinitionRegistry) {
@@ -97,7 +98,6 @@ final class PostProcessorRegistrationDelegate {
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
 			// PriorityOrdered, Ordered, and the rest.
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
-
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
@@ -113,6 +113,7 @@ final class PostProcessorRegistrationDelegate {
 			currentRegistryProcessors.clear();
 
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
+			//重复查找原因在于上面的执行过程中可能会新增其他的BeanDefinitionRegistryPostProcessor
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
